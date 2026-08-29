@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kiosk New Photobooth Pro Ver 1.0</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Dependencies / Libraries Local -->
+    <script src="libs/jszip.min.js"></script>
+    <script src="libs/FileSaver.min.js"></script>
+    <script src="libs/qrcode.min.js"></script>
+
+    <!-- Midtrans Snap SDK -->
+    <script src="https://app.midtrans.com/snap/snap.js" data-client-key="Mid-client-MK-5yLAVCdP0Yd_o"></script>
+
+    <style id="dynamicPrintStyle">
+        @page { size: 5in 7in; margin: 0; }
+    </style>
+</head>
+<body>
+
+    <!-- TOOLBAR HEADER -->
+    <header class="app-header">
+        <div class="header-top">
+            <div class="brand-title">📁 KIOSK NEW PHOTOBOOTH PRO Ver 1.0</div>
+            <div class="top-actions">
+                <span id="queueBadge" class="license-badge queue" style="display: none;">🔄 Queue: 0</span>
+                <span id="licenseBadge" class="license-badge free">🟠 Free Mode</span>
+                <button id="settingsBtn" class="btn-settings">⚙️ Event Settings</button>
+            </div>
+        </div>
+
+        <div class="toolbar-grid">
+            <div class="tool-card">
+                <span class="tool-label">Quick Mode Preset</span>
+                <div class="segmented-control">
+                    <button id="mode1Btn" class="seg-btn">📱 Mode 1</button>
+                    <button id="mode2Btn" class="seg-btn">🤳 Mode 2</button>
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <span class="tool-label">License & Pass Code</span>
+                <div class="btn-group">
+                    <button id="midtransPayBtn" class="btn-action btn-qris">🛒 Beli Pass (QRIS)</button>
+                    <button id="activatePassBtn" class="btn-action btn-pass">🔑 Masukkan Pass</button>
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <span class="tool-label">Kamera & Layar</span>
+                <div class="btn-group">
+                    <select id="cameraSelect" class="cam-select"><option>Memuat kamera...</option></select>
+                    <button id="mirrorBtn" class="btn-icon" title="Mirror Camera">↔️ Mirror</button>
+                    <button id="fullscreenBtn" class="btn-icon" title="Fullscreen">⛶ Full</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN INTERFACE -->
+    <main>
+        <aside class="sidebar">
+            <div class="sidebar-section-title">📷 Manual Control Kamera</div>
+
+            <div class="setting-card">
+                <label>ISO Speed</label>
+                <select id="isoSelect">
+                    <option value="auto" selected>Auto ISO</option>
+                    <option value="100">100</option>
+                    <option value="200">200</option>
+                    <option value="400">400</option>
+                    <option value="800">800</option>
+                    <option value="1600">1600</option>
+                    <option value="3200">3200</option>
+                    <option value="6400">6400</option>
+                </select>
+            </div>
+
+            <div class="setting-card">
+                <label>Aperture (f-stop)</label>
+                <select id="apertureSelect">
+                    <option value="auto" selected>Auto Aperture</option>
+                    <option value="1.4">f/1.4</option>
+                    <option value="1.8">f/1.8</option>
+                    <option value="2.8">f/2.8</option>
+                    <option value="4.0">f/4.0</option>
+                    <option value="5.6">f/5.6</option>
+                    <option value="8.0">f/8.0</option>
+                    <option value="11">f/11</option>
+                    <option value="16">f/16</option>
+                </select>
+            </div>
+
+            <div class="setting-card">
+                <label>Shutter Speed</label>
+                <select id="shutterSelect">
+                    <option value="auto" selected>Auto Shutter</option>
+                    <option value="1/1000">1/1000 s</option>
+                    <option value="1/500">1/500 s</option>
+                    <option value="1/250">1/250 s</option>
+                    <option value="1/200">1/200 s</option>
+                    <option value="1/160">1/160 s</option>
+                    <option value="1/125">1/125 s</option>
+                    <option value="1/100">1/100 s</option>
+                    <option value="1/60">1/60 s</option>
+                    <option value="1/30">1/30 s</option>
+                </select>
+            </div>
+
+            <div class="sidebar-section-title">🖼️ Layout & Cetak</div>
+
+            <div class="setting-card">
+                <label>Ukuran Cetak DNP</label>
+                <select id="dnpSizeSelect">
+                    <option value="5r_p" selected>5R Portrait (5x7")</option>
+                    <option value="5r_l">5R Landscape (7x5")</option>
+                    <option value="4r_p">4R Portrait (4x6")</option>
+                    <option value="4r_l">4R Landscape (6x4")</option>
+                    <option value="strip_2x6">2x6 Strip (Auto-Cut)</option>
+                    <option value="6r_p">6R Portrait (6x8")</option>
+                </select>
+            </div>
+
+            <div class="setting-card">
+                <label>Jumlah Pose / Foto</label>
+                <select id="poseFormat">
+                    <option value="1" selected>1 Pose (Single Photo)</option>
+                    <option value="3">3 Pose (Classic Strip)</option>
+                    <option value="4">4 Pose (Grid 2x2)</option>
+                </select>
+            </div>
+
+            <div class="setting-card">
+                <label>Margin Safe Area (px)</label>
+                <input type="range" id="safeAreaMargin" min="0" max="150" value="40">
+            </div>
+
+            <div class="setting-card">
+                <label>Warna Background Strip</label>
+                <div class="color-picker-wrapper">
+                    <button class="color-btn active" data-color="#ffffff" style="background: #ffffff;"></button>
+                    <button class="color-btn" data-color="#090d16" style="background: #090d16;"></button>
+                    <button class="color-btn" data-color="#f472b6" style="background: #f472b6;"></button>
+                    <button class="color-btn" data-color="#38bdf8" style="background: #38bdf8;"></button>
+                    <div class="custom-color-btn" title="Pick Custom Color">
+                        <input type="color" id="customColorPicker" value="#ffffff">
+                    </div>
+                </div>
+            </div>
+
+            <div class="setting-card">
+                <label>Frame Overlay (PNG Transparan)</label>
+                <input type="file" id="overlayInput" accept="image/png">
+            </div>
+
+            <div class="setting-card">
+                <label>Judul Event (Opsional)</label>
+                <input type="text" id="eventTitle" placeholder="Kosongkan jika ada di PNG Frame">
+                <input type="text" id="eventSub" placeholder="Subjudul (Opsional)" style="margin-top: 4px;">
+            </div>
+
+            <div class="setting-card">
+                <label>Filter Visual</label>
+                <select id="filterSelect">
+                    <option value="none">Normal (Original)</option>
+                    <option value="grayscale(100%)">B&W (Hitam Putih)</option>
+                    <option value="sepia(70%)">Vintage Sepia</option>
+                    <option value="brightness(110%) contrast(108%)">Bright & Soft</option>
+                </select>
+            </div>
+        </aside>
+
+        <section class="stage-container">
+            <div class="flash-overlay" id="flashElem"></div>
+            <div class="countdown-overlay" id="countdownElem">3</div>
+            
+            <div class="camera-wrapper" id="cameraWrapper">
+                <video id="webcam" autoplay playsinline class="mirrored"></video>
+                <div class="safe-zone-guide" id="safeZoneGuide"></div>
+                <img id="liveOverlay" class="live-overlay" alt="Frame Overlay">
+            </div>
+
+            <div class="capture-bar">
+                <button class="btn-capture" id="startBtn">📸 AMBIL FOTO</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL RESULT -->
+    <div class="modal" id="resultModal">
+        <div class="modal-card">
+            <div class="preview-box">
+                <canvas id="outputCanvas"></canvas>
+            </div>
+            <div class="modal-sidebar">
+                <h3>Hasil Foto</h3>
+                <p style="color: var(--text-body); font-size: 0.8rem;">Cetak atau unduh strip foto di bawah ini.</p>
+                
+                <button class="btn-action btn-qris" id="printBtn" style="padding: 12px;">🖨️ Cetak Foto</button>
+                <button id="downloadPngBtn" class="btn-icon" style="justify-content: center; padding: 10px;">💾 Unduh PNG Strip</button>
+                <button id="downloadZipBtn" class="btn-icon" style="justify-content: center; padding: 10px;">📦 Unduh ZIP (Semua Foto)</button>
+                
+                <div class="qr-card">
+                    <p id="qrStatus">MENYIAPKAN QR CODE...</p>
+                    <div id="qrcode" style="margin-top: 6px;"></div>
+                </div>
+
+                <button id="closeModalBtn" class="btn-danger">❌ Selesai & Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PASS ACTIVATION -->
+    <div class="modal" id="activationModal">
+        <div class="modal-box">
+            <h3 style="margin-bottom: 8px; font-size: 1.1rem; text-align: center;">🔑 Aktivasi Pass Kiosk</h3>
+            <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 20px; text-align: center;">
+                Masukkan Pass Code dari Admin untuk membuka durasi operasional tanpa watermark.
+            </p>
+
+            <div style="margin-bottom: 16px;">
+                <label class="input-label">Pass Code License:</label>
+                <input type="text" id="inputPassCode" placeholder="SECRET" class="code-input">
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button id="closeActivationBtn" class="btn-secondary">Batal</button>
+                <button id="submitPassBtn" class="btn-action btn-pass">Aktivasi Code</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EVENT SETTINGS -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-box">
+            <h3 style="margin-bottom: 16px; font-size: 1.1rem;">⚙️ Pengaturan Event & Sistem</h3>
+            
+            <div style="margin-bottom: 12px;">
+                <label class="input-label">Google Drive Master Folder Link:</label>
+                <input type="text" id="inputDriveLink" placeholder="Tempel link folder Google Drive" style="margin-top: 4px;">
+            </div>
+            
+            <div style="margin-bottom: 12px;">
+                <label class="input-label">Nama Sub-Folder Event:</label>
+                <input type="text" id="inputEventName" placeholder="Contoh: Graduation 2026" style="margin-top: 4px;">
+            </div>
+
+            <div style="margin-bottom: 20px; border-top: 1px dashed var(--panel-border); padding-top: 12px;">
+                <label class="input-label" style="color: #10b981;">⏱️ STATUS & MASA AKTIF PASS:</label>
+                <div class="status-box">
+                    <span id="passStatusText" style="font-weight: 600; font-size: 0.85rem;">Memeriksa status...</span>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button id="closeSettingsBtn" class="btn-secondary">Batal</button>
+                <button id="saveSettingsBtn" class="btn-action btn-qris">Simpan Pengaturan</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="printArea"></div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
